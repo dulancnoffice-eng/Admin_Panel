@@ -182,7 +182,7 @@
             display: flex;
             gap: 12px;
         }
-        .logout-btn, .user-manage-btn {
+        .logout-btn, .-manage-btn {
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(230,126,34,0.3);
             padding: 0.6rem 1.3rem;
@@ -196,13 +196,13 @@
             gap: 8px;
             font-size: 0.8rem;
         }
-        .logout-btn:hover, .user-manage-btn:hover {
+        .logout-btn:hover, .-manage-btn:hover {
             background: rgba(230,126,34,0.15);
             border-color: #e67e22;
         }
         
-        /* Hide manage accounts button for non-admin users */
-        .user-manage-btn.hidden {
+        /* Hide manage accounts button for non-admin s */
+        .-manage-btn.hidden {
             display: none;
         }
 
@@ -261,7 +261,7 @@
             color: #f5a623;
         }
 
-        /* User Modal */
+        /*  Modal */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -331,12 +331,12 @@
             padding: 1.5rem;
             overflow-y: auto;
         }
-        .user-list {
+        .-list {
             margin-top: 1rem;
             max-height: 300px;
             overflow-y: auto;
         }
-        .user-item {
+        .-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -346,20 +346,20 @@
             margin-bottom: 0.7rem;
             border: 1px solid rgba(230,126,34,0.15);
         }
-        .user-info {
+        .-info {
             display: flex;
             flex-direction: column;
         }
-        .user-username {
+        .-name {
             font-weight: 600;
             color: #f0d0a0;
         }
-        .user-pwd {
+        .-pwd {
             font-size: 0.7rem;
             color: rgba(255,255,255,0.5);
             font-family: monospace;
         }
-        .delete-user-btn {
+        .delete--btn {
             background: rgba(231, 76, 60, 0.2);
             border: 1px solid #e74c3c;
             color: #e74c3c;
@@ -369,11 +369,11 @@
             font-size: 0.7rem;
             transition: 0.2s;
         }
-        .delete-user-btn:hover {
+        .delete--btn:hover {
             background: #e74c3c;
             color: white;
         }
-        .add-user-form {
+        .add--form {
             margin-top: 1.5rem;
             padding-top: 1rem;
             border-top: 1px solid rgba(230,126,34,0.2);
@@ -546,7 +546,7 @@
     // USER DATABASE - Only dlxn17 is admin, all others are normal users
     const DEFAULT_USERS = [
         { username: "dlxn17", password: "xhs@Dul", role: "admin" },
-        { username: "user", password: "user", role: "user" },
+        { username: "huzaifa", password: "huzaifa123", role: "user" },
     ];
 
     function loadUsers() {
