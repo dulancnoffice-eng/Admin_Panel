@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* ... (keep all existing styles the same) ... */
         * {
             margin: 0;
             padding: 0;
@@ -153,7 +154,6 @@
             margin-right: 6px;
         }
 
-        /* Dashboard */
         .dashboard {
             display: none;
         }
@@ -182,7 +182,7 @@
             display: flex;
             gap: 12px;
         }
-        .logout-btn, .-manage-btn {
+        .logout-btn, .user-manage-btn {
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(230,126,34,0.3);
             padding: 0.6rem 1.3rem;
@@ -196,13 +196,12 @@
             gap: 8px;
             font-size: 0.8rem;
         }
-        .logout-btn:hover, .-manage-btn:hover {
+        .logout-btn:hover, .user-manage-btn:hover {
             background: rgba(230,126,34,0.15);
             border-color: #e67e22;
         }
         
-        /* Hide manage accounts button for non-admin s */
-        .-manage-btn.hidden {
+        .user-manage-btn.hidden {
             display: none;
         }
 
@@ -261,7 +260,6 @@
             color: #f5a623;
         }
 
-        /*  Modal */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -331,12 +329,12 @@
             padding: 1.5rem;
             overflow-y: auto;
         }
-        .-list {
+        .user-list {
             margin-top: 1rem;
             max-height: 300px;
             overflow-y: auto;
         }
-        .-item {
+        .user-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -346,20 +344,20 @@
             margin-bottom: 0.7rem;
             border: 1px solid rgba(230,126,34,0.15);
         }
-        .-info {
+        .user-info {
             display: flex;
             flex-direction: column;
         }
-        .-name {
+        .user-username {
             font-weight: 600;
             color: #f0d0a0;
         }
-        .-pwd {
+        .user-pwd {
             font-size: 0.7rem;
             color: rgba(255,255,255,0.5);
             font-family: monospace;
         }
-        .delete--btn {
+        .delete-user-btn {
             background: rgba(231, 76, 60, 0.2);
             border: 1px solid #e74c3c;
             color: #e74c3c;
@@ -369,11 +367,11 @@
             font-size: 0.7rem;
             transition: 0.2s;
         }
-        .delete--btn:hover {
+        .delete-user-btn:hover {
             background: #e74c3c;
             color: white;
         }
-        .add--form {
+        .add-user-form {
             margin-top: 1.5rem;
             padding-top: 1rem;
             border-top: 1px solid rgba(230,126,34,0.2);
@@ -451,7 +449,6 @@
 <body>
 
 <div class="vault-wrapper">
-    <!-- LOGIN PAGE -->
     <div id="loginCard" class="glass-panel login-container">
         <div class="brand-icon">
             <i class="fas fa-crown"></i>
@@ -472,7 +469,6 @@
         </div>
     </div>
 
-    <!-- DASHBOARD (after login) -->
     <div id="dashboardPanel" class="glass-panel dashboard">
         <div class="dashboard-header">
             <div class="admin-welcome">
@@ -516,7 +512,6 @@
     </div>
 </div>
 
-<!-- User Management Modal - Only visible to admin -->
 <div id="userModal" class="modal-overlay">
     <div class="modal-container">
         <div class="modal-header">
@@ -543,16 +538,25 @@
 <div id="globalToast" class="toast-message"><i class="fas fa-check-circle"></i> <span>Ready</span></div>
 
 <script>
-    // USER DATABASE - Only dlxn17 is admin, all others are normal users
+    // USER DATABASE - Updated with new users
     const DEFAULT_USERS = [
         { username: "dlxn17", password: "xhs@Dul", role: "admin" },
-        { username: "huzaifa", password: "huzaifa123", role: "user" },
+        { username: "huzaifa", password: "huzaifa123", role: "user" }
     ];
 
     function loadUsers() {
+        // Check if we need to reset old data
         const stored = localStorage.getItem("flirtify_users");
         if (stored) {
-            return JSON.parse(stored);
+            const parsed = JSON.parse(stored);
+            // Check if huzaifa exists, if not, reset to defaults
+            const hasHuzaifa = parsed.some(u => u.username === "huzaifa");
+            if (!hasHuzaifa) {
+                // Reset to defaults if huzaifa is missing
+                localStorage.setItem("flirtify_users", JSON.stringify(DEFAULT_USERS));
+                return [...DEFAULT_USERS];
+            }
+            return parsed;
         } else {
             localStorage.setItem("flirtify_users", JSON.stringify(DEFAULT_USERS));
             return [...DEFAULT_USERS];
@@ -566,7 +570,6 @@
     let usersDB = loadUsers();
     let currentUser = null;
 
-    // Login state management using sessionStorage
     function setLoginState(loggedIn, username = null, role = null) {
         if (loggedIn && username) {
             sessionStorage.setItem("logged_in", "true");
@@ -591,7 +594,6 @@
         return sessionStorage.getItem("role");
     }
 
-    // DOM Elements
     const loginCard = document.getElementById('loginCard');
     const dashboardPanel = document.getElementById('dashboardPanel');
     const manageUsersBtn = document.getElementById('manageUsersBtn');
@@ -625,7 +627,6 @@
         dashboardPanel.style.display = 'block';
         document.getElementById('displayAdminUser').innerText = username;
         
-        // Show/hide admin controls based on role
         if (role === 'admin') {
             manageUsersBtn.classList.remove('hidden');
             userRoleText.innerText = 'Administrator - Full access to manage accounts';
@@ -646,12 +647,10 @@
         closeUserModal();
     }
 
-    // Open tool in same page (full navigation)
     function openTool(filePath) {
         window.location.href = filePath;
     }
 
-    // User Management - Only accessible if current user is admin
     function renderUserList() {
         const container = document.getElementById('userListContainer');
         if (!container) return;
@@ -743,7 +742,6 @@
         });
     }
 
-    // Modal Functions
     const userModal = document.getElementById('userModal');
 
     function openUserModal() {
@@ -760,7 +758,6 @@
         userModal.classList.remove('active');
     }
 
-    // Tool Card Click Handlers - Navigate to file
     function bindToolCards() {
         const cards = document.querySelectorAll('.tool-card');
         cards.forEach(card => {
@@ -773,7 +770,6 @@
         });
     }
 
-    // Event Listeners
     document.getElementById('loginBtn').addEventListener('click', () => {
         const user = document.getElementById('usernameInput').value.trim();
         const pwd = document.getElementById('passwordInput').value;
@@ -798,15 +794,12 @@
         window.open('https://t.me/dlxn17', '_blank');
     });
     
-    // Close modal on overlay click
     userModal.addEventListener('click', (e) => { 
         if(e.target === userModal) closeUserModal(); 
     });
     
-    // Initialize
     bindToolCards();
     
-    // Check login state on page load
     if (isLoggedIn()) {
         const username = getLoggedInUsername();
         const role = getLoggedInRole();
