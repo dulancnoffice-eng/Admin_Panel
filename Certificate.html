@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Complete FLIRTYFY Certificate Customizer</title>
+    <title>Complete Flirtify Certificate Customizer</title>
     <style>
         * {
             margin: 0;
@@ -421,7 +421,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>Complete FLIRTYFY Certificate Customizer</h1>
+            <h1>Complete Flirtify Certificate Customizer</h1>
             <p class="subtitle">Edit ALL certificate details, customize watermark, change colors, and download your custom certificate</p>
         </header>
         
@@ -450,7 +450,7 @@
                     <div class="input-row">
                         <div class="input-field">
                             <label for="issuingAuthority">Issuing Authority</label>
-                            <input type="text" id="issuingAuthority" value="FLIRTYFY Security Division">
+                            <input type="text" id="issuingAuthority" value="Flirtify Security Division">
                         </div>
                         <div class="input-field">
                             <label for="membershipId">Membership ID</label>
@@ -499,7 +499,7 @@
                     <div class="watermark-control">
                         <div class="input-group">
                             <label for="watermarkText">Watermark Text</label>
-                            <input type="text" id="watermarkText" value="Flirtyfy" maxlength="30">
+                            <input type="text" id="watermarkText" value="Flirtify" maxlength="30">
                         </div>
                         <div class="slider-container">
                             <div class="slider-label">
@@ -582,7 +582,7 @@
             
             <div class="certificate-container">
                 <div class="certificate" id="certificate">
-                    <div class="watermark" id="watermark">Flirtyfy</div>
+                    <div class="watermark" id="watermark">Flirtify</div>
                     <div class="certificate-content">
                         <div class="certificate-name" id="displayName">DULAN @dlxn17</div>
                         <div class="certificate-title" id="displayTitle">ELITE<br>VERIFICATION<br>CERTIFICATE</div>
@@ -594,7 +594,7 @@
                             </tr>
                             <tr>
                                 <td class="detail-label">ISSUING AUTHORITY</td>
-                                <td class="detail-value" id="displayIssuingAuthority">FLIRTYFY Security Division</td>
+                                <td class="detail-value" id="displayIssuingAuthority">Flirtify Security Division</td>
                             </tr>
                             <tr>
                                 <td class="detail-label">MEMBERSHIP ID</td>
@@ -873,7 +873,7 @@
         
         // Update watermark
         function updateWatermark() {
-            const text = watermarkInput.value || 'Flirtyfy';
+            const text = watermarkInput.value || 'Flirtify';
             watermark.textContent = text;
         }
         
@@ -927,7 +927,7 @@
         function updateCertificateDetails() {
             displayName.textContent = certificateName.value || 'DULAN @dlxn17';
             displayVerificationDate.textContent = verificationDate.value || 'August 15, 2023';
-            displayIssuingAuthority.textContent = issuingAuthority.value || 'FLIRTYFY Security Division';
+            displayIssuingAuthority.textContent = issuingAuthority.value || 'Flirtify Security Division';
             displayMembershipId.textContent = membershipId.value || 'FLT-MEM-88765';
             displayVerificationScope.textContent = verificationScope.value || 'GLOBAL VERIFICATION';
             displayCertificateType.textContent = certificateType.value || 'Elite Identity Verification';
@@ -979,7 +979,7 @@
             
             // Reset other fields
             certificateName.value = 'DULAN @dlxn17';
-            issuingAuthority.value = 'FLIRTYFY Security Division';
+            issuingAuthority.value = 'Flirtify Security Division';
             
             // Generate random Membership ID
             membershipId.value = generateRandomMembershipId();
@@ -997,7 +997,7 @@
             updateCertificateDetails();
             
             // Reset watermark
-            watermarkInput.value = 'Flirtyfy';
+            watermarkInput.value = 'Flirtify';
             updateWatermark();
             
             // Reset opacity and size
@@ -1032,7 +1032,7 @@
                 const link = document.createElement('a');
                 const name = certificateName.value || 'SAI_KRISHNA';
                 const date = new Date().toISOString().slice(0, 10);
-                link.download = `FLIRTYFY_Certificate_${name.replace(/\s+/g, '_')}_${date}.png`;
+                link.download = `Flirtify_Certificate_${name.replace(/\s+/g, '_')}_${date}.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
                 
