@@ -392,6 +392,43 @@
 
   <script>
     // ──────────────────────────────────────────────────────────────
+    // HELPER: Format amount with commas and 2 decimal places
+    // Maximum: 100,000.00
+    function formatAmountWithCommas(amountValue) {
+      // Remove any existing commas and non-numeric characters except decimal
+      let cleanAmount = amountValue.toString().replace(/[^0-9.]/g, '');
+      
+      // Ensure only one decimal point
+      const decimalParts = cleanAmount.split('.');
+      if (decimalParts.length > 2) {
+        cleanAmount = decimalParts[0] + '.' + decimalParts.slice(1).join('');
+      }
+      
+      // Parse as float
+      let numberValue = parseFloat(cleanAmount);
+      if (isNaN(numberValue)) {
+        return '0.00';
+      }
+      
+      // Limit maximum to 100,000.00
+      if (numberValue > 100000) {
+        numberValue = 100000;
+      }
+      
+      // Format with 2 decimal places
+      const formattedNumber = numberValue.toFixed(2);
+      
+      // Split into integer and decimal parts
+      const parts = formattedNumber.split('.');
+      let integerPart = parts[0];
+      const decimalPart = parts[1];
+      
+      // Add commas to integer part
+      integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      
+      return `${integerPart}.${decimalPart}`;
+    }
+
     // HELPER: format date as "3 April 2026"
     function formatDateLabel(dateStr) {
       if (!dateStr) return '';
@@ -440,16 +477,10 @@
 
     // LIVE PREVIEW: sync all fields to the slip DOM
     function updatePreview() {
+      // Handle amount with commas and formatting
       const amountRaw = document.getElementById('inputAmount').value.trim();
-      let amountFormatted = amountRaw === '' ? '0.00' : amountRaw;
-      if (!amountFormatted.match(/^\d+(\.\d{0,2})?$/)) {
-        // if user typed weird chars, fallback but keep as string
-        amountFormatted = amountFormatted.replace(/[^0-9.]/g, '');
-        if (amountFormatted === '') amountFormatted = '0';
-      }
-      const amountNumber = parseFloat(amountFormatted);
-      const finalAmount = isNaN(amountNumber) ? '0.00' : amountNumber.toFixed(2);
-      document.getElementById('previewAmount').textContent = `₹${finalAmount}`;
+      const formattedAmount = formatAmountWithCommas(amountRaw);
+      document.getElementById('previewAmount').textContent = `₹${formattedAmount}`;
 
       const nameRaw = document.getElementById('inputName').value.trim();
       const finalNameHtml = nameRaw === '' ? 'Recipient Name' : formatRecipientName(nameRaw);
@@ -475,8 +506,49 @@
       document.getElementById('previewDate').textContent = fullDateTime;
     }
 
+    // Format amount input as user types (add commas automatically)
+    function formatAmountInput() {
+      const amountInput = document.getElementById('inputAmount');
+      let rawValue = amountInput.value.trim();
+      
+      // Remove existing commas
+      rawValue = rawValue.replace(/,/g, '');
+      
+      // Allow only numbers and decimal
+      let numericValue = rawValue.replace(/[^0-9.]/g, '');
+      
+      // Ensure only one decimal
+      const parts = numericValue.split('.');
+      if (parts.length > 2) {
+        numericValue = parts[0] + '.' + parts.slice(1).join('');
+      }
+      
+      // Parse and limit to 100,000
+      let numberValue = parseFloat(numericValue);
+      if (!isNaN(numberValue)) {
+        if (numberValue > 100000) {
+          numberValue = 100000;
+          numericValue = numberValue.toString();
+        }
+      }
+      
+      // Format with commas for display in input field
+      if (numericValue !== '') {
+        const decimalParts = numericValue.split('.');
+        let integerPart = decimalParts[0];
+        const decimalPart = decimalParts[1] !== undefined ? '.' + decimalParts[1] : '';
+        
+        // Add commas to integer part
+        integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        
+        amountInput.value = integerPart + decimalPart;
+      }
+      
+      updatePreview();
+    }
+
     // Bind real-time updates for all editable inputs
-    const inputIds = ['inputAmount', 'inputName', 'inputUpi', 'inputApp', 'inputDate', 'inputTime'];
+    const inputIds = ['inputName', 'inputUpi', 'inputApp', 'inputDate', 'inputTime'];
     inputIds.forEach(id => {
       const element = document.getElementById(id);
       if (element) {
@@ -484,6 +556,13 @@
         element.addEventListener('change', updatePreview);
       }
     });
+    
+    // Special handler for amount input with comma formatting
+    const amountElement = document.getElementById('inputAmount');
+    if (amountElement) {
+      amountElement.addEventListener('input', formatAmountInput);
+      amountElement.addEventListener('change', formatAmountInput);
+    }
 
     // ──────────────────────────────────────────────────────────────
     // DOWNLOAD high-res PNG (custom 1426x2560 ultra-clear)
@@ -546,12 +625,7 @@
       }
     }
 
-    // TELEGRAM REDIRECT: exactly as required - when clicking the contact note OR dedicated button.
-    // The main button is an anchor already with href="https://t.me/dlxn17" target="_blank".
-    // Additionally we add a smooth redirect to the same link when the footer note text is clicked?
-    // To improve UX, we also make the entire res-note clickable with pointer, but only if user wants.
-    // But requirement: "Once I click this. I need to redirect it to my Telegram account . My account link is https://t.me/dlxn17"
-    // The "this" refers to the contact note text. So we need to make the text ".res-note" also clickable and open Telegram.
+    // TELEGRAM REDIRECT
     const contactNote = document.querySelector('.res-note');
     if (contactNote) {
       contactNote.style.cursor = 'pointer';
@@ -568,13 +642,11 @@
       });
     }
 
-    // Also the explicit Telegram button is already linked, but to be 100% robust we add manual safety.
     const telegramBtn = document.getElementById('telegramLinkBtn');
     if (telegramBtn) {
       telegramBtn.setAttribute('href', 'https://t.me/dlxn17');
       telegramBtn.setAttribute('target', '_blank');
       telegramBtn.addEventListener('click', (e) => {
-        // ensures redirection even in case of nested issues
         e.stopPropagation();
       });
     }
@@ -591,6 +663,7 @@
     // Initialize fields: set current date+time, trigger preview.
     setCurrentDateTime();
     updatePreview();
+    formatAmountInput();
 
     // Extra: Make sure that the date/time inputs also update preview if changed via keyboard
     window.addEventListener('load', () => {
