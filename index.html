@@ -555,20 +555,20 @@
 <div id="globalToast" class="toast-message"><i class="fas fa-check-circle"></i> <span>Ready</span></div>
 
 <script>
-    // USER DATABASE
+    // USER DATABASE - Added new user "小陈"
     const DEFAULT_USERS = [
         { username: "dlxn17", password: "xhs@Dul", role: "admin" },
-        { username: "huzaifa", password: "huzaifa123", role: "user" }
-
-        
+        { username: "huzaifa", password: "huzaifa123", role: "user" },
+        { username: "小陈", password: "12345", role: "user" }
     ];
 
     function loadUsers() {
         const stored = localStorage.getItem("flirtify_users");
         if (stored) {
             const parsed = JSON.parse(stored);
-            const hasHuzaifa = parsed.some(u => u.username === "huzaifa");
-            if (!hasHuzaifa) {
+            // Check if 小陈 exists, if not, reset to defaults
+            const hasXiaoChen = parsed.some(u => u.username === "小陈");
+            if (!hasXiaoChen) {
                 localStorage.setItem("flirtify_users", JSON.stringify(DEFAULT_USERS));
                 return [...DEFAULT_USERS];
             }
