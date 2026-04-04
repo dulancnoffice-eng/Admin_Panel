@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>HDFC Bank Slip Editor</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Segoe UI',sans-serif;
+  background:#0f0f1e;
+  display:flex;
+  min-height:100vh;
+  overflow:hidden;
+}
+
+/* ══ LEFT PREVIEW ══ */
+#left{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  padding:24px 20px;
+  overflow-y:auto;
+  background:#0f0f1e;
+}
+#left h2{
+  color:#555;font-size:11px;letter-spacing:3px;
+  text-transform:uppercase;margin-bottom:14px;
+}
+
+/* slip card */
+#slip-card{
+  position:relative;
+  width:320px;
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow:0 30px 90px rgba(0,0,0,.8);
+  background:#e8e8e8;
+  display:none;
+}
+#slip-img{
+  width:100%;
+  display:block;
+}
+
+/* text overlay */
+#text-overlay{
+  position:absolute;
+  left:0; right:0;
+  padding:0 6.5%;
+  pointer-events:none;
+}
+#overlay-text{
+  font-family:'Roboto','Segoe UI',Arial,sans-serif;
+  font-size:13.2px;
+  line-height:1.65;
+  color:#111;
+  font-weight:400;
+  word-break:break-word;
+}
+
+/* placeholder */
+#placeholder{
+  width:320px;
+  height:714px;
+  background:linear-gradient(160deg,#00b09b,#007a6e);
+  border-radius:14px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  color:rgba(255,255,255,.75);
+  font-size:13px;
+  gap:10px;
+  box-shadow:0 30px 90px rgba(0,0,0,.8);
+  cursor:pointer;
+  border:2px dashed rgba(255,255,255,.3);
+  transition:background .2s;
+}
+#placeholder:hover{background:linear-gradient(160deg,#00c9b1,#009a8a);}
+#placeholder .ico{font-size:40px;}
+#placeholder p{font-size:11px;opacity:.6;text-align:center;padding:0 20px;}
+
+/* controls below preview */
+#controls-below{
+  margin-top:14px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  width:320px;
+}
+#pos-row{
+  display:flex;align-items:center;gap:8px;
+  font-size:11px;color:#44446a;
+}
+#pos-row input[type=range]{width:150px;accent-color:#00b09b;}
+#pos-val{color:#7777aa;min-width:30px;}
+
+/* ══ RIGHT PANEL ══ */
+#panel{
+  width:296px;
+  background:#141428;
+  border-left:1px solid #1e1e3e;
+  padding:22px 18px;
+  display:flex;
+  flex-direction:column;
+  overflow-y:auto;
+}
+#panel h1{font-size:15px;font-weight:700;color:#e0e0ff;margin-bottom:3px;}
+.sub{font-size:10px;color:#3a3a5a;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:20px;}
+
+.fg{margin-bottom:14px;}
+.fg label{display:block;font-size:10px;color:#5a5a9a;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;}
+.fg input{
+  width:100%;
+  background:#0c0c22;border:1px solid #222244;
+  border-radius:7px;padding:8px 11px;
+  color:#d0d0ff;font-size:13px;outline:none;
+  font-family:'Roboto Mono','Courier New',monospace;
+  transition:border-color .2s;
+}
+.fg input:focus{border-color:#4444cc;background:#111130;}
+.hint{font-size:10px;color:#2c2c44;margin-top:3px;}
+
+.div{height:1px;background:#1a1a38;margin:6px 0 14px;}
+
+#btn-regen{
+  width:100%;padding:9px;
+  background:#181838;border:1px solid #2a2a55;
+  border-radius:7px;color:#6666bb;font-size:11px;
+  cursor:pointer;margin-bottom:10px;letter-spacing:.5px;
+  transition:background .2s;
+}
+#btn-regen:hover{background:#22224a;}
+
+#btn-dl{
+  width:100%;padding:13px;
+  background:linear-gradient(135deg,#00b09b,#00796b);
+  color:#fff;border:none;border-radius:9px;
+  font-size:14px;font-weight:700;cursor:pointer;
+  letter-spacing:.5px;transition:opacity .2s,transform .1s;
+  margin-top:6px;
+}
+#btn-dl:hover{opacity:.9;transform:translateY(-1px);}
+#btn-dl:active{transform:translateY(0);}
+#btn-dl:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+
+#status{font-size:11px;color:#44bb77;text-align:center;margin-top:8px;min-height:16px;}
+#err-msg{font-size:11px;color:#cc4444;text-align:center;margin-top:4px;min-height:14px;line-height:1.4;}
+
+#file-in,#export-canvas{display:none;}
+</style>
+</head>
+<body>
+
+<!-- LEFT -->
+<div id="left">
+  <h2>Live Preview</h2>
+
+  <div id="placeholder">
+    <div class="ico">⏳</div>
+    <div id="placeholder-title">Loading HDFC.png…</div>
+    <p id="placeholder-msg">Make sure HDFC.png is in the same folder / repo.</p>
+  </div>
+
+  <div id="slip-card">
+    <img id="slip-img" alt="">
+    <div id="text-overlay">
+      <div id="overlay-text"></div>
+    </div>
+  </div>
+
+  <div id="controls-below">
+    <div id="pos-row">
+      <span>Text Y:</span>
+      <input type="range" id="pos-slider" min="10" max="80" value="27" oninput="setPos(this.value)">
+      <span id="pos-val">27%</span>
+      <span style="color:#2a2a44;font-size:10px;">(drag to fine-tune)</span>
+    </div>
+  </div>
+</div>
+
+<!-- RIGHT PANEL -->
+<div id="panel">
+  <h1>HDFC Slip Editor</h1>
+  <div class="sub">Edit fields below</div>
+
+  <div class="fg">
+    <label>Amount (INR)</label>
+    <input id="f-amount" type="text" placeholder="1,080.00">
+  </div>
+  <div class="fg">
+    <label>A/c Last 4 Digits</label>
+    <input id="f-ac" type="text" maxlength="4" placeholder="2020">
+  </div>
+  <div class="fg">
+    <label>Date (DD–MM–YY)</label>
+    <input id="f-date" type="text" placeholder="04–04–26">
+    <div class="hint">Auto-set to today's date</div>
+  </div>
+  <div class="fg">
+    <label>Sender Mobile Last 4 Digits</label>
+    <input id="f-mobile" type="text" maxlength="4" placeholder="2364">
+  </div>
+
+  <div class="div"></div>
+
+  <div class="fg">
+    <label>IMPS Ref No.</label>
+    <input id="f-imps" type="text" maxlength="12" placeholder="609490409829">
+    <div class="hint">Starts with 6094 — auto-generated</div>
+  </div>
+  <button id="btn-regen" onclick="regenImps()">🔄 Regenerate IMPS Ref No.</button>
+
+  <div class="fg">
+    <label>Available Balance (INR)</label>
+    <input id="f-bal" type="text" placeholder="8,319.00">
+  </div>
+
+  <div class="div"></div>
+
+  <button id="btn-dl" onclick="doDownload()">⬇ Download PNG (1376×3074)</button>
+  <div id="status"></div>
+  <div id="err-msg"></div>
+</div>
+
+<canvas id="export-canvas"></canvas>
+
+<script>
+let imgSrc = null;   // base64 data URL
+let topPct = 27;     // text start Y as % of image height
+
+// ── helpers ──────────────────────────────────────────────
+function pad2(n){return String(n).padStart(2,'0');}
+function today(){
+  const d=new Date();
+  return pad2(d.getDate())+'–'+pad2(d.getMonth()+1)+'–'+String(d.getFullYear()).slice(2);
+}
+function randImps(){return '6094'+Math.floor(Math.random()*1e8).toString().padStart(8,'0');}
+function val(id){return document.getElementById(id).value.trim();}
+
+// ── build message ─────────────────────────────────────────
+function buildMsg(){
+  return 'Money Received - INR '+(val('f-amount')||'0.00')+
+    ' in your HDFC Bank A/c XX'+(val('f-ac')||'XXXX')+
+    ' on '+(val('f-date')||today())+
+    ' by A/c linked to mobile no XX'+(val('f-mobile')||'XXXX')+
+    ' (IMPS Ref No. '+(val('f-imps')||'000000000000')+
+    ') Avl bal: INR '+(val('f-bal')||'0.00');
+}
+
+// ── live preview ──────────────────────────────────────────
+function updatePreview(){
+  document.getElementById('overlay-text').textContent = buildMsg();
+}
+
+// ── position slider ───────────────────────────────────────
+function setPos(v){
+  topPct = parseFloat(v);
+  document.getElementById('pos-val').textContent = v+'%';
+  document.getElementById('text-overlay').style.top = v+'%';
+}
+
+// ── regen IMPS ────────────────────────────────────────────
+function regenImps(){
+  document.getElementById('f-imps').value = randImps();
+  updatePreview();
+}
+
+// ── auto-load HDFC.png (works on GitHub Pages / any HTTP server) ──
+(function tryAuto(){
+  fetch('HDFC.png')
+    .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.blob(); })
+    .then(blob=>{
+      const r2 = new FileReader();
+      r2.onload = e=>{
+        imgSrc = e.target.result;
+        const imgEl = document.getElementById('slip-img');
+        imgEl.src = imgSrc;
+        imgEl.onload = ()=>{
+          document.getElementById('slip-card').style.display = 'block';
+          document.getElementById('placeholder').style.display = 'none';
+          document.getElementById('text-overlay').style.top = topPct+'%';
+          updatePreview();
+        };
+      };
+      r2.readAsDataURL(blob);
+    })
+    .catch(e=>{
+      // Show friendly error in placeholder
+      document.getElementById('placeholder-title').textContent = '⚠ HDFC.png not found';
+      document.getElementById('placeholder-msg').textContent =
+        'Make sure HDFC.png is in the same folder as this HTML file and is committed to your repo.';
+      document.getElementById('placeholder').style.cursor = 'default';
+    });
+})();
+
+// ── download PNG ──────────────────────────────────────────
+function doDownload(){
+  const statusEl = document.getElementById('status');
+  const errEl    = document.getElementById('err-msg');
+  const btn      = document.getElementById('btn-dl');
+  statusEl.textContent = '';
+  errEl.textContent    = '';
+
+  if(!imgSrc){
+    errEl.textContent = '⚠ HDFC.png not loaded. Ensure the file exists in the same folder/repo.';
+    return;
+  }
+
+  btn.disabled = true;
+  statusEl.textContent = 'Rendering canvas…';
+
+  // Use setTimeout so the UI updates before the heavy canvas work
+  setTimeout(()=>{
+    try{
+      const W=1376, H=3074;
+      const canvas = document.getElementById('export-canvas');
+      canvas.width=W; canvas.height=H;
+      const ctx = canvas.getContext('2d');
+
+      // Draw bg image
+      const img = new Image();
+      img.onload = function(){
+        ctx.drawImage(img,0,0,W,H);
+
+        // Text parameters
+        const textY  = Math.round(H*(topPct/100));
+        const padX   = Math.round(W*0.065);
+        const maxW   = W - padX*2;
+        const fsize  = 52;
+        const lh     = Math.round(fsize*1.65);
+
+        ctx.font         = `400 ${fsize}px Roboto,'Segoe UI',Arial,sans-serif`;
+        ctx.fillStyle    = '#111111';
+        ctx.textBaseline = 'top';
+
+        // Word-wrap
+        const words = buildMsg().split(' ');
+        let lines=[],cur='';
+        for(const w of words){
+          const test = cur ? cur+' '+w : w;
+          if(ctx.measureText(test).width>maxW && cur){lines.push(cur);cur=w;}
+          else cur=test;
+        }
+        if(cur) lines.push(cur);
+        lines.forEach((l,i)=>ctx.fillText(l,padX,textY+i*lh));
+
+        // Export as blob → download
+        statusEl.textContent = 'Saving file…';
+        canvas.toBlob(blob=>{
+          if(!blob){
+            errEl.textContent='Export failed.';
+            btn.disabled=false;
+            statusEl.textContent='';
+            return;
+          }
+          const url=URL.createObjectURL(blob);
+          const a=document.createElement('a');
+          a.href=url; a.download='HDFC_Slip.png'; a.click();
+          setTimeout(()=>URL.revokeObjectURL(url),3000);
+          statusEl.textContent='✓ Downloaded! (1376×3074 px)';
+          setTimeout(()=>{statusEl.textContent='';},5000);
+          btn.disabled=false;
+        },'image/png');
+      };
+      img.onerror=function(){
+        errEl.textContent='Image failed to load for canvas.';
+        btn.disabled=false; statusEl.textContent='';
+      };
+      img.src = imgSrc;  // data URL — zero CORS issues
+
+    } catch(e){
+      errEl.textContent='Error: '+e.message;
+      btn.disabled=false; statusEl.textContent='';
+    }
+  },50);
+}
+
+// ── Init ─────────────────────────────────────────────────
+(function(){
+  document.getElementById('f-amount').value = '1,080.00';
+  document.getElementById('f-ac').value     = '2020';
+  document.getElementById('f-date').value   = today();
+  document.getElementById('f-mobile').value = '2364';
+  document.getElementById('f-imps').value   = randImps();
+  document.getElementById('f-bal').value    = '8,319.00';
+  updatePreview();
+  ['f-amount','f-ac','f-date','f-mobile','f-imps','f-bal'].forEach(id=>{
+    document.getElementById(id).addEventListener('input',updatePreview);
+  });
+})();
+</script>
+</body>
+</html>
