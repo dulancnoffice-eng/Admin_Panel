@@ -177,6 +177,37 @@
       padding: 0.26rem 0.8rem; border-radius: 30px;
       display: inline-flex; align-items: center; gap: 5px;
     }
+    .status-chip-failed {
+      background: rgba(229,57,53,0.13);
+      color: #ef5350; border: 1px solid rgba(229,57,53,0.32);
+      font-weight: 700; font-size: 0.8rem;
+      padding: 0.26rem 0.8rem; border-radius: 30px;
+      display: inline-flex; align-items: center; gap: 5px;
+    }
+    /* Custom status select */
+    .status-select {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 0.62rem 0.9rem;
+      color: #e8d8c8;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      outline: none;
+      transition: all 0.2s;
+      width: 100%;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23e67e22' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.9rem center;
+      padding-right: 2.2rem;
+    }
+    .status-select option { background: #1a1a1a; color: #e8d8c8; }
+    .status-select:hover { border-color: rgba(230,126,34,0.35); background-color: rgba(230,126,34,0.05); }
+    .status-select:focus { border-color: #e67e22; background-color: rgba(230,126,34,0.08); box-shadow: 0 0 0 3px rgba(230,126,34,0.12); }
 
     /* Footer */
     .slip-footer {
@@ -512,7 +543,10 @@
       <!-- Payment Info -->
       <div class="input-group">
         <label class="input-label"><i class="far fa-check-circle"></i> Payment Status</label>
-        <input class="input-field" id="inputStatus" type="text" placeholder="✅ Successful" value="✅ Successful">
+        <select class="status-select" id="inputStatus">
+          <option value="successful" selected>✅ Successful</option>
+          <option value="failed">❌ Failed</option>
+        </select>
       </div>
 
       <div class="input-group">
@@ -521,8 +555,8 @@
       </div>
 
       <div class="input-group">
-        <label class="input-label"><i class="fas fa-rupee-sign"></i> Total Amount</label>
-        <input class="input-field" id="inputAmount" type="text" placeholder="₹2,399" value="₹2,399">
+        <label class="input-label"><i class="fas fa-rupee-sign"></i> Total Amount (₹)</label>
+        <input class="input-field" id="inputAmount" type="text" placeholder="e.g. 2399" value="2399" inputmode="numeric">
       </div>
 
       <div class="panel-divider"></div>
@@ -580,9 +614,8 @@
   const DEFAULTS = {
     clubName : 'Flirtify  Dating Club',
     tagline  : 'PREMIUM CONNECTIONS \u2022 ELITE EXPERIENCE',
-    status   : '\u2705 Successful',
-    date     : '20 March 2026, 2:41 PM',
-    amount   : '\u20B92,399',
+    status   : 'successful',
+    amount   : '2399',
     paidTo   : 'DULAN @dlxn17 (ending 8686)',
     txn      : '001275065840',
     plan     : 'VIP \u2014 Tier 1 Completion',
@@ -619,36 +652,89 @@
     footer    : document.getElementById('previewFooter')
   };
 
-  /* ─── Apply ─── */
+  /* ─── Auto Date/Time (PC clock) ─── */
+  function getCurrentDateTime() {
+    const now = new Date();
+    const months = ['January','February','March','April','May','June',
+                    'July','August','September','October','November','December'];
+    const day   = now.getDate();
+    const month = months[now.getMonth()];
+    const year  = now.getFullYear();
+    let hours   = now.getHours();
+    const mins  = String(now.getMinutes()).padStart(2, '0');
+    const ampm  = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    return day + ' ' + month + ' ' + year + ', ' + hours + ':' + mins + ' ' + ampm;
+  }
+
+  /* ─── Amount auto-comma formatter ─── */
+  function formatAmount(raw) {
+    // Strip everything except digits
+    const digits = raw.replace(/[^0-9]/g, '');
+    if (!digits) return '';
+    // Add commas: 1,000 / 10,000 / 1,00,000 … standard international
+    return Number(digits).toLocaleString('en-IN');
+  }
+
+  /* ─── Update status chip style in preview ─── */
+  function applyStatusPreview(val) {
+    if (val === 'failed') {
+      prev.status.textContent = '\u274C Failed';
+      prev.status.className   = 'field-value status-chip-failed';
+    } else {
+      prev.status.textContent = '\u2705 Successful';
+      prev.status.className   = 'field-value status-chip';
+    }
+  }
+
+  /* ─── Apply all ─── */
   function applyChanges() {
     prev.clubName.textContent = inp.clubName.value || DEFAULTS.clubName;
     prev.tagline.textContent  = inp.tagline.value  || DEFAULTS.tagline;
-    prev.status.textContent   = inp.status.value   || DEFAULTS.status;
-    prev.date.textContent     = inp.date.value      || DEFAULTS.date;
-    prev.amount.textContent   = inp.amount.value    || DEFAULTS.amount;
-    prev.paidTo.textContent   = inp.paidTo.value    || DEFAULTS.paidTo;
-    prev.txn.textContent      = inp.txn.value       || DEFAULTS.txn;
+    applyStatusPreview(inp.status.value);
+    prev.date.textContent     = inp.date.value     || getCurrentDateTime();
+    const fmt = formatAmount(inp.amount.value);
+    prev.amount.textContent   = fmt ? '\u20B9' + fmt : '\u20B90';
+    prev.paidTo.textContent   = inp.paidTo.value   || DEFAULTS.paidTo;
+    prev.txn.textContent      = inp.txn.value      || DEFAULTS.txn;
     prev.plan.textContent     = inp.plan.value      || DEFAULTS.plan;
     prev.mode.textContent     = inp.mode.value      || DEFAULTS.mode;
     prev.footer.textContent   = inp.footer.value    || DEFAULTS.footer;
     showToast('\u2728 Slip updated successfully!');
   }
 
-  /* ─── Live preview on typing (instant) ─── */
-  inp.clubName.addEventListener('input', () => prev.clubName.textContent = inp.clubName.value || DEFAULTS.clubName);
-  inp.tagline.addEventListener('input',  () => prev.tagline.textContent  = inp.tagline.value  || DEFAULTS.tagline);
-  inp.status.addEventListener('input',   () => prev.status.textContent   = inp.status.value   || DEFAULTS.status);
-  inp.date.addEventListener('input',     () => prev.date.textContent     = inp.date.value      || DEFAULTS.date);
-  inp.amount.addEventListener('input',   () => prev.amount.textContent   = inp.amount.value    || DEFAULTS.amount);
-  inp.paidTo.addEventListener('input',   () => prev.paidTo.textContent   = inp.paidTo.value    || DEFAULTS.paidTo);
-  inp.txn.addEventListener('input',      () => prev.txn.textContent      = inp.txn.value       || DEFAULTS.txn);
-  inp.plan.addEventListener('input',     () => prev.plan.textContent     = inp.plan.value      || DEFAULTS.plan);
-  inp.mode.addEventListener('input',     () => prev.mode.textContent     = inp.mode.value      || DEFAULTS.mode);
-  inp.footer.addEventListener('input',   () => prev.footer.textContent   = inp.footer.value    || DEFAULTS.footer);
+  /* ─── Live preview on typing ─── */
+  inp.clubName.addEventListener('input', () => { prev.clubName.textContent = inp.clubName.value || DEFAULTS.clubName; });
+  inp.tagline.addEventListener('input',  () => { prev.tagline.textContent  = inp.tagline.value  || DEFAULTS.tagline; });
+  inp.status.addEventListener('change',  () => { applyStatusPreview(inp.status.value); });
+  inp.date.addEventListener('input',     () => { prev.date.textContent = inp.date.value || getCurrentDateTime(); });
+
+  /* ─── Amount: auto-format + live preview ─── */
+  inp.amount.addEventListener('input', () => {
+    const raw    = inp.amount.value.replace(/[^0-9]/g, '');
+    const formatted = raw ? Number(raw).toLocaleString('en-IN') : '';
+    inp.amount.value = formatted;                        // update field display
+    prev.amount.textContent = formatted ? '\u20B9' + formatted : '\u20B90';
+  });
+
+  inp.paidTo.addEventListener('input',  () => { prev.paidTo.textContent  = inp.paidTo.value  || DEFAULTS.paidTo; });
+  inp.txn.addEventListener('input',     () => { prev.txn.textContent     = inp.txn.value      || DEFAULTS.txn; });
+  inp.plan.addEventListener('input',    () => { prev.plan.textContent    = inp.plan.value      || DEFAULTS.plan; });
+  inp.mode.addEventListener('input',    () => { prev.mode.textContent    = inp.mode.value      || DEFAULTS.mode; });
+  inp.footer.addEventListener('input',  () => { prev.footer.textContent  = inp.footer.value    || DEFAULTS.footer; });
 
   /* ─── Reset ─── */
   function resetAll() {
-    Object.keys(inp).forEach(k => { inp[k].value = DEFAULTS[k] || ''; });
+    inp.clubName.value = DEFAULTS.clubName;
+    inp.tagline.value  = DEFAULTS.tagline;
+    inp.status.value   = 'successful';
+    inp.date.value     = getCurrentDateTime();
+    inp.amount.value   = Number(DEFAULTS.amount).toLocaleString('en-IN');
+    inp.paidTo.value   = DEFAULTS.paidTo;
+    inp.txn.value      = DEFAULTS.txn;
+    inp.plan.value     = DEFAULTS.plan;
+    inp.mode.value     = DEFAULTS.mode;
+    inp.footer.value   = DEFAULTS.footer;
     applyChanges();
     showToast('\u21BA Reset to defaults');
   }
@@ -666,6 +752,22 @@
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
   }
+
+  /* ─── On load: set auto date + format default amount ─── */
+  window.addEventListener('DOMContentLoaded', () => {
+    // Auto-populate date with current PC time
+    const autoDate = getCurrentDateTime();
+    inp.date.value = autoDate;
+    prev.date.textContent = autoDate;
+
+    // Format default amount display
+    const fmtAmt = Number(DEFAULTS.amount).toLocaleString('en-IN');
+    inp.amount.value = fmtAmt;
+    prev.amount.textContent = '\u20B9' + fmtAmt;
+
+    // Ensure status chip is correct
+    applyStatusPreview(inp.status.value);
+  });
 
   /* ─── Logo fallback ─── */
   const logoImg = document.getElementById('clubLogo');
