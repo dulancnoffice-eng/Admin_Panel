@@ -258,6 +258,11 @@
             border-radius: 20px;
             color: #f5a623;
         }
+        
+        /* Hidden tool card for restricted users */
+        .tool-card.hidden-card {
+            display: none;
+        }
 
         .modal-overlay {
             position: fixed;
@@ -481,9 +486,9 @@
                 <button id="logoutDashboardBtn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Lock Vault</button>
             </div>
         </div>
-        <div class="tools-grid">
-            <!-- Tool 1: Payment Slip (Original) -->
-            <div class="tool-card" data-file="Refund.html" data-title="Payment Slip · Premium">
+        <div class="tools-grid" id="toolsGrid">
+            <!-- Tool 1: Payment Slip (Original) - Full Access -->
+            <div class="tool-card full-access" data-file="Refund.html" data-title="Payment Slip · Premium">
                 <div class="card-media"><i class="fas fa-receipt"></i></div>
                 <div class="card-info">
                     <h4>💳 Payment Slip · Premium</h4>
@@ -492,8 +497,8 @@
                 </div>
             </div>
 
-            <!-- Tool 2: Google Pay Style Payment Slip -->
-            <div class="tool-card" data-file="Gpay.html" data-title="Google Pay Style Slip">
+            <!-- Tool 2: Google Pay Style Payment Slip - Access for Recep123 -->
+            <div class="tool-card gpay-access" data-file="Gpay.html" data-title="Google Pay Style Slip">
                 <div class="card-media"><i class="fab fa-google"></i></div>
                 <div class="card-info">
                     <h4>📱 GPay Style Payment Slip</h4>
@@ -502,8 +507,8 @@
                 </div>
             </div>
 
-            <!-- Tool 3: VIP Membership Card -->
-            <div class="tool-card" data-file="VIP.html" data-title="VIP Membership Card">
+            <!-- Tool 3: VIP Membership Card - Full Access -->
+            <div class="tool-card full-access" data-file="VIP.html" data-title="VIP Membership Card">
                 <div class="card-media"><i class="fas fa-id-card"></i></div>
                 <div class="card-info">
                     <h4>👑 VIP Membership Card</h4>
@@ -512,8 +517,8 @@
                 </div>
             </div>
 
-            <!-- Tool 4: Elite Verification Certificate -->
-            <div class="tool-card" data-file="Certificate.html" data-title="Elite Verification Certificate">
+            <!-- Tool 4: Elite Verification Certificate - Full Access -->
+            <div class="tool-card full-access" data-file="Certificate.html" data-title="Elite Verification Certificate">
                 <div class="card-media"><i class="fas fa-certificate"></i></div>
                 <div class="card-info">
                     <h4>📜 Elite Verification Certificate</h4>
@@ -522,8 +527,8 @@
                 </div>
             </div>
 
-            <!-- Tool 5: HDFC Bank Slip (NEW) -->
-            <div class="tool-card" data-file="HDFC Slip.html" data-title="HDFC Bank Slip">
+            <!-- Tool 5: HDFC Bank Slip - Access for Recep123 -->
+            <div class="tool-card hdfc-access" data-file="HDFC Slip.html" data-title="HDFC Bank Slip">
                 <div class="card-media"><i class="fas fa-university"></i></div>
                 <div class="card-info">
                     <h4>🏦 HDFC Bank Slip Editor</h4>
@@ -567,17 +572,18 @@
 <script>
     // USER DATABASE
     const DEFAULT_USERS = [
-        { username: "dlxn17", password: "xhs@Dul", role: "admin" },
-        { username: "huzaifa", password: "huzaifa123", role: "user" },
-        { username: "小陈", password: "12345", role: "user" }
+        { username: "dlxn17", password: "xhs@Dul", role: "admin", access: "full" },
+        { username: "huzaifa", password: "huzaifa123", role: "user", access: "full" },
+        { username: "小陈", password: "12345", role: "user", access: "full" },
+        { username: "Recep123", password: "Recep321", role: "user", access: "restricted", allowedTools: ["Gpay.html", "HDFC Slip.html"] }
     ];
 
     function loadUsers() {
         const stored = localStorage.getItem("flirtify_users");
         if (stored) {
             const parsed = JSON.parse(stored);
-            const hasXiaoChen = parsed.some(u => u.username === "小陈");
-            if (!hasXiaoChen) {
+            const hasRecep = parsed.some(u => u.username === "Recep123");
+            if (!hasRecep) {
                 localStorage.setItem("flirtify_users", JSON.stringify(DEFAULT_USERS));
                 return [...DEFAULT_USERS];
             }
@@ -595,15 +601,23 @@
     let usersDB = loadUsers();
     let currentUser = null;
 
-    function setLoginState(loggedIn, username = null, role = null) {
+    function setLoginState(loggedIn, username = null, role = null, access = null, allowedTools = null) {
         if (loggedIn && username) {
             sessionStorage.setItem("logged_in", "true");
             sessionStorage.setItem("username", username);
             sessionStorage.setItem("role", role);
+            sessionStorage.setItem("access", access || "full");
+            if (allowedTools) {
+                sessionStorage.setItem("allowedTools", JSON.stringify(allowedTools));
+            } else {
+                sessionStorage.removeItem("allowedTools");
+            }
         } else {
             sessionStorage.removeItem("logged_in");
             sessionStorage.removeItem("username");
             sessionStorage.removeItem("role");
+            sessionStorage.removeItem("access");
+            sessionStorage.removeItem("allowedTools");
         }
     }
 
@@ -619,10 +633,20 @@
         return sessionStorage.getItem("role");
     }
 
+    function getLoggedInAccess() {
+        return sessionStorage.getItem("access");
+    }
+
+    function getAllowedTools() {
+        const tools = sessionStorage.getItem("allowedTools");
+        return tools ? JSON.parse(tools) : [];
+    }
+
     const loginCard = document.getElementById('loginCard');
     const dashboardPanel = document.getElementById('dashboardPanel');
     const manageUsersBtn = document.getElementById('manageUsersBtn');
     const userRoleText = document.getElementById('userRoleText');
+    const toolsGrid = document.getElementById('toolsGrid');
 
     function showToast(msg, isError = false) {
         const toast = document.getElementById('globalToast');
@@ -631,12 +655,33 @@
         setTimeout(() => toast.classList.remove('show'), 2800);
     }
 
+    function applyAccessRestrictions(access, allowedTools) {
+        const allCards = document.querySelectorAll('.tool-card');
+        
+        if (access === "full") {
+            // Show all cards
+            allCards.forEach(card => {
+                card.classList.remove('hidden-card');
+            });
+        } else if (access === "restricted" && allowedTools && allowedTools.length > 0) {
+            // Hide cards that are not in allowedTools
+            allCards.forEach(card => {
+                const filePath = card.getAttribute('data-file');
+                if (allowedTools.includes(filePath)) {
+                    card.classList.remove('hidden-card');
+                } else {
+                    card.classList.add('hidden-card');
+                }
+            });
+        }
+    }
+
     function attemptLogin(username, password) {
         const user = usersDB.find(u => u.username === username && u.password === password);
         if (user) {
             currentUser = user;
-            setLoginState(true, username, user.role);
-            showDashboard(username, user.role);
+            setLoginState(true, username, user.role, user.access, user.allowedTools);
+            showDashboard(username, user.role, user.access, user.allowedTools);
             showToast(`✅ Welcome, ${username}.`);
             return true;
         } else {
@@ -647,7 +692,7 @@
         }
     }
 
-    function showDashboard(username, role) {
+    function showDashboard(username, role, access, allowedTools) {
         loginCard.style.display = 'none';
         dashboardPanel.style.display = 'block';
         document.getElementById('displayAdminUser').innerText = username;
@@ -657,8 +702,15 @@
             userRoleText.innerText = 'Administrator - Full access to manage accounts';
         } else {
             manageUsersBtn.classList.add('hidden');
-            userRoleText.innerText = 'User - Access to all tools';
+            if (access === "restricted") {
+                userRoleText.innerText = 'Restricted User - Access to GPay & HDFC Bank Slips only';
+            } else {
+                userRoleText.innerText = 'User - Access to all tools';
+            }
         }
+        
+        // Apply access restrictions to tool cards
+        applyAccessRestrictions(access, allowedTools);
     }
 
     function logout() {
@@ -696,6 +748,7 @@
                 <div class="user-info">
                     <span class="user-username"><i class="fas fa-user-circle"></i> ${escapeHtml(user.username)}</span>
                     <span class="user-pwd"><i class="fas fa-lock"></i> ${escapeHtml(user.password)}</span>
+                    <span style="font-size:0.6rem; color:#888; margin-top:2px;">${user.access === 'restricted' ? '🔒 Restricted (GPay & HDFC only)' : '✅ Full Access'}</span>
                 </div>
                 <button class="delete-user-btn" data-username="${user.username}"><i class="fas fa-trash-alt"></i> Delete</button>
             </div>
@@ -739,10 +792,11 @@
             showToast('Username already exists.', true);
             return false;
         }
-        usersDB.push({ username: username.trim(), password: password.trim(), role: "user" });
+        // New users get full access by default (admin can modify later if needed)
+        usersDB.push({ username: username.trim(), password: password.trim(), role: "user", access: "full" });
         saveUsers(usersDB);
         renderUserList();
-        showToast(`✅ New user "${username}" created.`);
+        showToast(`✅ New user "${username}" created with full access.`);
         return true;
     }
 
@@ -828,7 +882,9 @@
     if (isLoggedIn()) {
         const username = getLoggedInUsername();
         const role = getLoggedInRole();
-        showDashboard(username, role);
+        const access = getLoggedInAccess();
+        const allowedTools = getAllowedTools();
+        showDashboard(username, role, access, allowedTools);
     }
 </script>
 </body>
