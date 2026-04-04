@@ -378,8 +378,85 @@ function doDownload(){
   },50);
 }
 
+// ── Auto-comma + cents formatter ─────────────────────────
+// Formats: 1000 → 1,000.00 | 10000.5 → 10,000.50 | etc.
+
+function formatCurrency(raw){
+  // Strip everything except digits and ONE dot
+  let clean = raw.replace(/[^0-9.]/g,'');
+  // Allow only one decimal point
+  const parts = clean.split('.');
+  let intPart  = parts[0] || '0';
+  let decPart  = parts.length > 1 ? parts.slice(1).join('') : null;
+
+  // Remove leading zeros (keep at least '0')
+  intPart = intPart.replace(/^0+(\d)/,'$1') || '0';
+
+  // Add commas to integer part
+  intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g,',');
+
+  if(decPart === null){
+    return intPart; // no dot typed yet — don't force .00 while typing
+  }
+  // Cap cents at 2 digits
+  decPart = decPart.slice(0,2);
+  return intPart + '.' + decPart;
+}
+
+function finalizeCurrency(raw){
+  // On blur: ensure .00 is always present
+  let clean = raw.replace(/[^0-9.]/g,'');
+  const parts = clean.split('.');
+  let intPart = parts[0] || '0';
+  let decPart = parts.length > 1 ? parts[1] : '';
+  intPart = intPart.replace(/^0+(\d)/,'$1') || '0';
+  intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g,',');
+  decPart = (decPart + '00').slice(0,2); // pad to 2 digits
+  return intPart + '.' + decPart;
+}
+
+function attachCurrency(id){
+  const el = document.getElementById(id);
+
+  el.addEventListener('input', function(){
+    const pos   = this.selectionStart;
+    const old   = this.value;
+    const commasBefore = (old.slice(0,pos).match(/,/g)||[]).length;
+
+    this.value = formatCurrency(this.value);
+
+    // Restore cursor, compensating for added/removed commas
+    const commasAfter = (this.value.slice(0,pos).match(/,/g)||[]).length;
+    const newPos = pos + (commasAfter - commasBefore);
+    try{ this.setSelectionRange(newPos,newPos); }catch(e){}
+
+    updatePreview();
+  });
+
+  el.addEventListener('blur', function(){
+    if(this.value.trim()==='') return;
+    this.value = finalizeCurrency(this.value);
+    updatePreview();
+  });
+
+  el.addEventListener('keydown', function(e){
+    // Allow: backspace, delete, arrows, tab, home, end, decimal point
+    const allowed = [8,9,35,36,37,38,39,40,46,190,110];
+    // Block any key that isn't a digit or allowed key
+    if(!allowed.includes(e.keyCode) && !(e.keyCode>=48&&e.keyCode<=57) && !(e.keyCode>=96&&e.keyCode<=105)){
+      // Allow Ctrl+A/C/V/X
+      if(!(e.ctrlKey||e.metaKey)) e.preventDefault();
+    }
+  });
+}
+
 // ── Init ─────────────────────────────────────────────────
 (function(){
+  // Attach currency formatter to amount and balance
+  attachCurrency('f-amount');
+  attachCurrency('f-bal');
+
+  // Set defaults
   document.getElementById('f-amount').value = '1,080.00';
   document.getElementById('f-ac').value     = '2020';
   document.getElementById('f-date').value   = today();
@@ -387,7 +464,9 @@ function doDownload(){
   document.getElementById('f-imps').value   = randImps();
   document.getElementById('f-bal').value    = '8,319.00';
   updatePreview();
-  ['f-amount','f-ac','f-date','f-mobile','f-imps','f-bal'].forEach(id=>{
+
+  // Live update for non-currency fields
+  ['f-ac','f-date','f-mobile','f-imps'].forEach(id=>{
     document.getElementById(id).addEventListener('input',updatePreview);
   });
 })();
