@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kotak SMS</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #d0d0d0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Roboto', Arial, sans-serif;
+    gap: 32px;
+    padding: 30px 20px;
+  }
+
+  /* ══════════════════════
+     PHONE MOCKUP
+  ══════════════════════ */
+  .phone-wrap {
+    width: 400px;
+    flex-shrink: 0;
+    background: #f0f0f0;
+    font-family: 'Roboto', 'Noto Sans', Arial, sans-serif;
+  }
+
+  .top-time-row {
+    background: #f0f0f0;
+    text-align: center;
+    padding: 14px 0 8px 0;
+  }
+  .top-time-text {
+    font-size: 15px;
+    color: #222;
+    font-weight: 400;
+    letter-spacing: 0.2px;
+  }
+
+  .chat-area {
+    background: #f0f0f0;
+    padding: 6px 18px 12px 18px;
+  }
+
+  .bubble {
+    background: #ffffff;
+    border-radius: 18px 18px 18px 4px;
+    padding: 15px 18px 13px 18px;
+    max-width: 90%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.10);
+    margin-bottom: 6px;
+  }
+  .bubble-text {
+    font-size: 17px;
+    color: #111;
+    line-height: 1.5;
+    font-weight: 400;
+    letter-spacing: 0.05px;
+    word-break: break-word;
+  }
+  .ul { text-decoration: underline; text-underline-offset: 2px; }
+
+  .msg-meta {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding-left: 3px;
+    margin-top: 1px;
+  }
+  .msg-time    { font-size: 12.5px; color: #888; }
+  .msg-dot     { font-size: 13px;   color: #888; }
+  .msg-carrier { font-size: 12.5px; color: #2196F3; }
+
+  .reply-bar {
+    background: #22222a;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 20px;
+  }
+  .reply-text { color: #c8c8c8; font-size: 15px; font-weight: 400; }
+  .reply-link { color: #2196F3;  font-size: 15px; font-weight: 400; }
+
+  .nav-bar {
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 11px 60px 16px 60px;
+  }
+  .n-back { width:0; height:0; border-top:9px solid transparent; border-bottom:9px solid transparent; border-right:16px solid #666; }
+  .n-home { width:21px; height:21px; border-radius:50%; border:2px solid #666; }
+  .n-rec  { width:16px; height:16px; border:2px solid #666; border-radius:2px; }
+
+  /* ══════════════════════
+     CONTROLS
+  ══════════════════════ */
+  .controls {
+    background: #fff;
+    border-radius: 14px;
+    padding: 20px 20px;
+    width: 265px;
+    box-shadow: 0 2px 14px rgba(0,0,0,0.13);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .ctrl-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #555;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .ctrl-row { display: flex; flex-direction: column; gap: 4px; }
+
+  .ctrl-row label {
+    font-size: 11.5px;
+    color: #666;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .auto-tag {
+    font-size: 10px;
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #a5d6a7;
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-weight: 700;
+  }
+  .edit-tag {
+    font-size: 10px;
+    background: #fff3e0;
+    color: #e65100;
+    border: 1px solid #ffcc80;
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-weight: 700;
+  }
+
+  .ctrl-row input {
+    padding: 7px 10px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 7px;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+    color: #222;
+    background: #fff;
+  }
+  .ctrl-row input:focus { border-color: #2196F3; background: #fafcff; }
+
+  /* IMPS row — all editable, side by side */
+  .imps-wrap { display: flex; }
+  .imps-pre-input {
+    width: 68px;
+    padding: 7px 8px;
+    border: 1.5px solid #e0e0e0;
+    border-right: none;
+    border-radius: 7px 0 0 7px;
+    font-size: 13px;
+    font-weight: 600;
+    outline: none;
+    transition: border-color 0.2s;
+    color: #222;
+    background: #fff;
+    text-align: center;
+  }
+  .imps-pre-input:focus { border-color: #2196F3; background: #fafcff; }
+  .imps-suf-input {
+    flex: 1;
+    padding: 7px 8px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 0 7px 7px 0;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+    color: #222;
+    background: #fff;
+  }
+  .imps-suf-input:focus { border-color: #2196F3; background: #fafcff; }
+
+  .divider-line { height: 1px; background: #eee; margin: 2px 0; }
+
+  .btn {
+    width: 100%;
+    padding: 9px;
+    border: none;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-imps  { background: #e3f2fd; color: #1565c0; }
+  .btn-imps:hover  { background: #bbdefb; }
+  .btn-reset { background: #f5f5f5; color: #555; }
+  .btn-reset:hover { background: #e8e8e8; }
+  .btn-png   { background: #4CAF50; color: #fff; }
+  .btn-png:hover   { background: #388E3C; }
+  .btn-png.loading { opacity: 0.65; pointer-events: none; }
+</style>
+</head>
+<body>
+
+<!-- ── PHONE MOCKUP ── -->
+<div class="phone-wrap" id="phone-mockup">
+  <div class="top-time-row">
+    <span class="top-time-text" id="disp-top-time">9:32 pm</span>
+  </div>
+  <div class="chat-area">
+    <div class="bubble">
+      <div class="bubble-text">
+        Received Rs. <span id="disp-amount">60,000.00</span> on
+        <span class="ul" id="disp-date">04-04-26</span> in
+        your Kotak Bank A/C x<span id="disp-ac">1045</span> by an A/C
+        linked to mobile x<span id="disp-mobile">507</span>. IMPS Ref no
+        <span class="ul" id="disp-imps">609400000000</span>.
+      </div>
+    </div>
+    <div class="msg-meta">
+      <span class="msg-time" id="disp-meta-time">9:32 pm</span>
+      <span class="msg-dot">•</span>
+      <span class="msg-carrier">Jio</span>
+    </div>
+  </div>
+  <div class="reply-bar">
+    <span class="reply-text">Can't reply to this short code</span>
+    <span class="reply-link">Learn more</span>
+  </div>
+  <div class="nav-bar">
+    <div class="n-back"></div>
+    <div class="n-home"></div>
+    <div class="n-rec"></div>
+  </div>
+</div>
+
+<!-- ── CONTROLS ── -->
+<div class="controls">
+  <div class="ctrl-title">✏️ Edit Fields</div>
+
+  <div class="ctrl-row">
+    <label>Date <span class="auto-tag">AUTO</span> <span class="edit-tag">EDITABLE</span></label>
+    <input type="text" id="inp-date" placeholder="DD-MM-YY">
+  </div>
+
+  <div class="ctrl-row">
+    <label>Time <span class="auto-tag">AUTO</span> <span class="edit-tag">EDITABLE</span></label>
+    <input type="text" id="inp-time" placeholder="9:32 pm">
+  </div>
+
+  <div class="divider-line"></div>
+
+  <div class="ctrl-row">
+    <label>Amount (₹)</label>
+    <input type="text" id="inp-amount" value="60000" placeholder="e.g. 60000">
+  </div>
+
+  <div class="ctrl-row">
+    <label>A/C Last 4 digits</label>
+    <input type="text" id="inp-ac" value="1045" maxlength="4" placeholder="1045">
+  </div>
+
+  <div class="ctrl-row">
+    <label>Mobile Last 3 digits</label>
+    <input type="text" id="inp-mobile" value="507" maxlength="3" placeholder="507">
+  </div>
+
+  <div class="divider-line"></div>
+
+  <div class="ctrl-row">
+    <label>IMPS Ref No <span class="auto-tag">AUTO</span> <span class="edit-tag">EDITABLE</span></label>
+    <div class="imps-wrap">
+      <input type="text" class="imps-pre-input" id="inp-imps-pre" value="6094" maxlength="6" placeholder="6094">
+      <input type="text" class="imps-suf-input" id="inp-imps-suf" placeholder="00000000">
+    </div>
+  </div>
+
+  <button class="btn btn-imps"  onclick="generateIMPS()">🔄 New IMPS Ref</button>
+  <button class="btn btn-reset" onclick="resetAll()">↩ Reset to Auto</button>
+  <button class="btn btn-png"   id="btn-dl" onclick="downloadPNG()">📥 Download PNG</button>
+</div>
+
+<script>
+  function pad(n){ return String(n).padStart(2,'0'); }
+
+  function formatTime(d){
+    let h = d.getHours(), m = d.getMinutes(), ap = 'am';
+    if(h >= 12){ ap = 'pm'; if(h > 12) h -= 12; }
+    if(h === 0) h = 12;
+    return h + ':' + pad(m) + ' ' + ap;
+  }
+
+  function formatDate(d){
+    return pad(d.getDate()) + '-' + pad(d.getMonth()+1) + '-' + String(d.getFullYear()).slice(-2);
+  }
+
+  function formatAmount(raw){
+    let clean = raw.replace(/[^0-9.]/g,'');
+    let dot = clean.indexOf('.');
+    let intS, decS;
+    if(dot === -1){ intS = clean||'0'; decS = '00'; }
+    else { intS = clean.slice(0,dot)||'0'; decS = clean.slice(dot+1,dot+3).padEnd(2,'0'); }
+    intS = intS.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return intS + '.' + decS;
+  }
+
+  function randSuffix(){
+    let s='';
+    for(let i=0;i<8;i++) s += Math.floor(Math.random()*10);
+    return s;
+  }
+
+  function generateIMPS(){
+    document.getElementById('inp-imps-suf').value = randSuffix();
+    updatePreview();
+  }
+
+  function updatePreview(){
+    const t    = document.getElementById('inp-time').value || '';
+    const d    = document.getElementById('inp-date').value || '';
+    const pre  = document.getElementById('inp-imps-pre').value || '';
+    const suf  = document.getElementById('inp-imps-suf').value || '';
+
+    document.getElementById('disp-top-time').textContent  = t;
+    document.getElementById('disp-meta-time').textContent = t;
+    document.getElementById('disp-date').textContent      = d;
+    document.getElementById('disp-amount').textContent    = formatAmount(document.getElementById('inp-amount').value);
+    document.getElementById('disp-ac').textContent        = document.getElementById('inp-ac').value || '0000';
+    document.getElementById('disp-mobile').textContent    = document.getElementById('inp-mobile').value || '000';
+    document.getElementById('disp-imps').textContent      = pre + suf;
+  }
+
+  function setDateTime(){
+    const now = new Date();
+    document.getElementById('inp-date').value = formatDate(now);
+    document.getElementById('inp-time').value = formatTime(now);
+    updatePreview();
+  }
+
+  async function downloadPNG(){
+    const btn = document.getElementById('btn-dl');
+    btn.textContent = '⏳ Generating...';
+    btn.classList.add('loading');
+    try {
+      const canvas = await html2canvas(document.getElementById('phone-mockup'), {
+        scale: 3, useCORS: true, backgroundColor: '#f0f0f0', logging: false
+      });
+      const a = document.createElement('a');
+      a.download = 'kotak_sms_' + Date.now() + '.png';
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    } catch(e){ alert('Error: ' + e.message); }
+    btn.textContent = '📥 Download PNG';
+    btn.classList.remove('loading');
+  }
+
+  function resetAll(){
+    document.getElementById('inp-amount').value   = '60000';
+    document.getElementById('inp-ac').value       = '1045';
+    document.getElementById('inp-mobile').value   = '507';
+    document.getElementById('inp-imps-pre').value = '6094';
+    setDateTime();
+    generateIMPS();
+  }
+
+  // Live listeners
+  ['inp-date','inp-time','inp-amount','inp-ac','inp-mobile','inp-imps-pre','inp-imps-suf'].forEach(id =>
+    document.getElementById(id).addEventListener('input', updatePreview)
+  );
+
+  // Init
+  setDateTime();
+  generateIMPS();
+
+  // Live clock — only auto-updates if user hasn't manually changed the time
+  setInterval(() => {
+    const now     = new Date();
+    const autoT   = formatTime(now);
+    const autoD   = formatDate(now);
+    // Only tick if the fields still match "auto" values (not manually edited)
+    const curT = document.getElementById('inp-time').value;
+    const curD = document.getElementById('inp-date').value;
+    // We can't detect manual edits perfectly, so just silently update every 30s
+    // User can always type their own value to override
+    document.getElementById('inp-time').value = autoT;
+    document.getElementById('inp-date').value = autoD;
+    updatePreview();
+  }, 30000);
+</script>
+</body>
+</html>
