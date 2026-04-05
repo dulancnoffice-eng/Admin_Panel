@@ -220,7 +220,7 @@ body{
 
   <div class="div"></div>
 
-  <button id="btn-dl" onclick="doDownload()">⬇ Download PNG (1376×3074)</button>
+  <button id="btn-dl" onclick="doDownload()">⬇ Download PNG (688×1537)</button>
   <div id="status"></div>
   <div id="err-msg"></div>
 </div>
@@ -315,7 +315,7 @@ function doDownload(){
   // Use setTimeout so the UI updates before the heavy canvas work
   setTimeout(()=>{
     try{
-      const W=1376, H=3074;
+      const W=688, H=1537;
       const canvas = document.getElementById('export-canvas');
       canvas.width=W; canvas.height=H;
       const ctx = canvas.getContext('2d');
@@ -360,7 +360,7 @@ function doDownload(){
           const a=document.createElement('a');
           a.href=url; a.download='HDFC_Slip.png'; a.click();
           setTimeout(()=>URL.revokeObjectURL(url),3000);
-          statusEl.textContent='✓ Downloaded! (1376×3074 px)';
+          statusEl.textContent='✓ Downloaded! (688×1537 px)';
           setTimeout(()=>{statusEl.textContent='';},5000);
           btn.disabled=false;
         },'image/png');
