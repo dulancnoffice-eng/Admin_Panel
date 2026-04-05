@@ -18,13 +18,13 @@
       min-height: 100vh;
       display: flex;
       font-family: 'Inter', sans-serif;
-      color: #ffffff;
+      color: #f3f6f4;
     }
 
     /* LEFT: preview pane with centered slip */
     .preview-pane {
       flex: 1;
-      background: #0c0c0c;
+      background: #121212;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -36,7 +36,7 @@
     #slip {
       width: 390px;
       height: 844px;
-      background: #000000;
+      background: #121212;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -69,7 +69,7 @@
     #slip .amount {
       font-size: 44px;
       font-weight: 500;
-      color: #ffffff;
+      color: #f3f6f4;
       letter-spacing: -0.5px;
       margin-bottom: 32px;
       font-family: 'Roboto', sans-serif;
@@ -87,7 +87,7 @@
     #slip .recipient-name {
       font-size: 21px;
       font-weight: 500;
-      color: #ffffff;
+      color: #f3f6f4;
       line-height: 1.4;
       margin-bottom: 10px;
       font-family: 'Roboto', sans-serif;
@@ -209,16 +209,16 @@
       color: #202124;
     }
     #slip.white-theme .paid-to-label {
-      color: #5f6368;
+      color: #1c1d1f;
     }
     #slip.white-theme .recipient-name {
       color: #202124;
     }
     #slip.white-theme .upi-row {
-      color: #5f6368;
+      color: #1c1d1f;
     }
     #slip.white-theme .date {
-      color: #5f6368;
+      color: #1c1d1f;
     }
 
     .row-2 {
@@ -362,7 +362,7 @@
   <div class="preview-pane">
     <div id="slip">
       <div class="check-circle">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#f3f6f4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="20 6 9 17 4 12"/>
         </svg>
       </div>
@@ -645,7 +645,7 @@
 
       // Detect active theme for background colour
       const isWhite = document.getElementById('inputTheme').value === 'white';
-      const bgColor = isWhite ? '#ffffff' : '#000000';
+      const bgColor = isWhite ? '#f3f6f4' : '#121212';
 
       // Calculate scale to fill the target canvas without stretching weirdly
       const scaleX = targetWidth / originalWidth;
