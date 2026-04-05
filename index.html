@@ -536,6 +536,16 @@
                     <div class="card-badge"><i class="fas fa-download"></i> High-res export</div>
                 </div>
             </div>
+
+            <!-- Tool 6: Kotak SMS - Access for Recep123 -->
+            <div class="tool-card kotak-access" data-file="KOTAK SMS.html" data-title="Kotak Bank SMS">
+                <div class="card-media"><i class="fas fa-envelope"></i></div>
+                <div class="card-info">
+                    <h4>📱 Kotak Bank SMS Generator</h4>
+                    <p>Generate realistic Kotak Bank transaction SMS with custom amount, account details, IMPS reference & download as PNG.</p>
+                    <div class="card-badge"><i class="fas fa-mobile-alt"></i> SMS Style</div>
+                </div>
+            </div>
         </div>
         <div class="help-note" style="margin: 0 2rem 2rem 2rem; background: rgba(0,0,0,0.3); cursor: default;">
             <i class="fas fa-arrow-right"></i> Click any card to open tool (use browser back button to return)
@@ -575,7 +585,7 @@
         { username: "dlxn17", password: "xhs@Dul", role: "admin", access: "full" },
         { username: "huzaifa", password: "huzaifa123", role: "user", access: "full" },
         { username: "小陈", password: "12345", role: "user", access: "full" },
-        { username: "Recep123", password: "Recep321", role: "user", access: "restricted", allowedTools: ["Gpay.html", "HDFC Slip.html"] }
+        { username: "Recep123", password: "Recep321", role: "user", access: "restricted", allowedTools: ["Gpay.html", "HDFC Slip.html", "KOTAK SMS.html"] }
     ];
 
     function loadUsers() {
@@ -703,7 +713,7 @@
         } else {
             manageUsersBtn.classList.add('hidden');
             if (access === "restricted") {
-                userRoleText.innerText = 'Restricted User - Access to GPay & HDFC Bank Slips only';
+                userRoleText.innerText = 'Restricted User - Access to GPay, HDFC & Kotak SMS only';
             } else {
                 userRoleText.innerText = 'User - Access to all tools';
             }
@@ -748,7 +758,7 @@
                 <div class="user-info">
                     <span class="user-username"><i class="fas fa-user-circle"></i> ${escapeHtml(user.username)}</span>
                     <span class="user-pwd"><i class="fas fa-lock"></i> ${escapeHtml(user.password)}</span>
-                    <span style="font-size:0.6rem; color:#888; margin-top:2px;">${user.access === 'restricted' ? '🔒 Restricted (GPay & HDFC only)' : '✅ Full Access'}</span>
+                    <span style="font-size:0.6rem; color:#888; margin-top:2px;">${user.access === 'restricted' ? '🔒 Restricted (GPay, HDFC & Kotak only)' : '✅ Full Access'}</span>
                 </div>
                 <button class="delete-user-btn" data-username="${user.username}"><i class="fas fa-trash-alt"></i> Delete</button>
             </div>
