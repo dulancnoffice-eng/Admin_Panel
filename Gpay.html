@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
   <title>Payment Slip Generator | Live Preview</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     * {
@@ -24,7 +24,7 @@
     /* LEFT: preview pane with centered slip */
     .preview-pane {
       flex: 1;
-      background: #121212;
+      background: #000000;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -32,11 +32,11 @@
       padding: 40px 20px;
     }
 
-    /* Payment slip card — exactly what gets captured */
+    /* Payment slip card — perfectly matched to original aesthetic */
     #slip {
       width: 390px;
       height: 844px;
-      background: #121212;
+      background: #111111; /* Exact dark background from screenshot */
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -44,71 +44,66 @@
       text-align: center;
       padding: 0 24px;
       flex-shrink: 0;
-      font-family: 'Roboto', sans-serif;
+      /* Prioritize Google Sans, fallback to Inter */
+      font-family: 'Google Sans', 'Product Sans', 'Inter', sans-serif; 
       border-radius: 0;
-      box-shadow: 0 20px 35px -12px rgba(0,0,0,0.5);
     }
 
     .check-circle {
       width: 72px;
       height: 72px;
-      background-color: #1a73e8;
+      background-color: #1256D2; /* Exact vibrant blue */
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 40px;
+      margin-bottom: 50px;
       flex-shrink: 0;
-      box-shadow: 0 8px 16px rgba(26,115,232,0.25);
     }
+    
     .check-circle svg {
-      width: 36px;
-      height: 36px;
+      width: 38px;
+      height: 38px;
     }
 
     #slip .amount {
-      font-size: 44px;
-      font-weight: 500;
-      color: #f3f6f4;
+      font-size: 46px;
+      font-weight: 400; /* Thinner weight to match screenshot */
+      color: #FFFFFF;
       letter-spacing: -0.5px;
-      margin-bottom: 32px;
-      font-family: 'Roboto', sans-serif;
+      margin-bottom: 45px;
     }
 
     #slip .paid-to-label {
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 400;
-      color: #9e9e9e;
-      margin-bottom: 6px;
-      letter-spacing: 0.3px;
-      font-family: 'Roboto', sans-serif;
+      color: #E3E3E3;
+      margin-bottom: 8px;
     }
 
     #slip .recipient-name {
-      font-size: 21px;
-      font-weight: 500;
-      color: #f3f6f4;
-      line-height: 1.4;
-      margin-bottom: 10px;
-      font-family: 'Roboto', sans-serif;
+      font-size: 24px;
+      font-weight: 400;
+      color: #FFFFFF;
+      line-height: 1.3;
+      margin-bottom: 12px;
       word-break: break-word;
       max-width: 100%;
     }
 
     #slip .upi-row {
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 400;
-      color: #b0b0b0;
-      margin-bottom: 4px;
-      font-family: 'Roboto', sans-serif;
+      color: #E3E3E3;
+      margin-bottom: 12px;
+      letter-spacing: 0.2px;
     }
 
     #slip .date {
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 400;
-      color: #9e9e9e;
-      font-family: 'Roboto', sans-serif;
-      margin-top: 4px;
+      color: #E3E3E3;
+      letter-spacing: 0.2px;
     }
 
     /* RIGHT: modern control panel */
@@ -121,7 +116,6 @@
       flex-direction: column;
       padding: 32px 24px;
       overflow-y: auto;
-      backdrop-filter: blur(0px);
     }
 
     .panel-title {
@@ -135,7 +129,7 @@
       font-size: 12px;
       color: #777;
       margin-bottom: 28px;
-      border-left: 2px solid #1a73e8;
+      border-left: 2px solid #1256D2;
       padding-left: 10px;
     }
 
@@ -168,9 +162,8 @@
       transition: all 0.2s ease;
     }
     input:focus {
-      border-color: #1a73e8;
+      border-color: #1256D2;
       background: #242424;
-      box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
     }
 
     select {
@@ -192,33 +185,28 @@
       cursor: pointer;
     }
     select:focus {
-      border-color: #1a73e8;
+      border-color: #1256D2;
       background-color: #242424;
-      box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
     }
     select option {
       background: #1e1e1e;
       color: #fff;
     }
 
-    /* Slip white theme */
+    /* Slip white theme (Optional Light Mode equivalent) */
     #slip.white-theme {
       background: #ffffff;
     }
     #slip.white-theme .amount {
-      color: #202124;
+      color: #1F1F1F;
     }
-    #slip.white-theme .paid-to-label {
-      color: #1c1d1f;
+    #slip.white-theme .paid-to-label,
+    #slip.white-theme .upi-row,
+    #slip.white-theme .date {
+      color: #5E5E5E;
     }
     #slip.white-theme .recipient-name {
-      color: #202124;
-    }
-    #slip.white-theme .upi-row {
-      color: #1c1d1f;
-    }
-    #slip.white-theme .date {
-      color: #1c1d1f;
+      color: #1F1F1F;
     }
 
     .row-2 {
@@ -259,11 +247,11 @@
     }
 
     .btn-download {
-      background: #1a73e8;
+      background: #1256D2;
       color: white;
     }
     .btn-download:hover {
-      background: #0f5bc0;
+      background: #0f4bb8;
       transform: translateY(-1px);
     }
     .btn-download:active {
@@ -277,7 +265,7 @@
     }
     .btn-telegram:hover {
       background: #1e3b5c;
-      border-color: #1a73e8;
+      border-color: #1256D2;
       color: white;
       transform: translateY(-1px);
     }
@@ -319,7 +307,7 @@
       width: 44px;
       height: 44px;
       border: 3px solid #2a2a2a;
-      border-top-color: #1a73e8;
+      border-top-color: #1256D2;
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
     }
@@ -352,36 +340,33 @@
 </head>
 <body>
 
-  <!-- Loading overlay for image generation -->
   <div id="loadingOverlay">
     <div class="spinner"></div>
     <div class="loading-text">Rendering payment slip ...</div>
   </div>
 
-  <!-- LEFT: live slip preview -->
   <div class="preview-pane">
     <div id="slip">
       <div class="check-circle">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#f3f6f4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="20 6 9 17 4 12"/>
         </svg>
       </div>
-      <div class="amount" id="previewAmount">₹1,999.00</div>
+      <div class="amount" id="previewAmount">₹8,694.00</div>
       <div class="paid-to-label">Paid to</div>
-      <div class="recipient-name" id="previewName">Vaghela Dharmeshbhai<br>Hareshbhai</div>
-      <div class="upi-row" id="previewUpi">PhonePe · lalitdankhara-3@okaxis</div>
-      <div class="date" id="previewDate">3 April 2026, 3:17 pm</div>
+      <div class="recipient-name" id="previewName">Lalit Dankhara</div>
+      <div class="upi-row" id="previewUpi">PhonePe • lalitdankhara-3@okaxis</div>
+      <div class="date" id="previewDate">7 April 2026, 3:17 pm</div>
     </div>
   </div>
 
-  <!-- RIGHT: editable controls -->
   <div class="control-panel">
     <div class="panel-title">Payment Slip Studio</div>
     <div class="panel-sub">Edit fields — preview updates instantly</div>
 
     <div class="field-group">
       <label>💰 Amount (₹)</label>
-      <input type="text" id="inputAmount" value="1,999.00" placeholder="e.g. 1299.00"/>
+      <input type="text" id="inputAmount" value="8,694.00" placeholder="e.g. 1299.00"/>
     </div>
 
     <div class="field-group">
@@ -422,7 +407,6 @@
 
     <div class="divider-line"></div>
 
-    <!-- Double action: Download Image + Telegram Contact -->
     <div class="action-buttons">
       <button class="btn-download" id="btnDownload">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -433,7 +417,6 @@
         Download Image (PNG)
       </button>
 
-      <!-- Telegram redirect: clicking this opens direct chat with @dlxn17 -->
       <a class="btn-telegram" id="telegramLinkBtn" href="https://t.me/dlxn17" target="_blank" rel="noopener noreferrer">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21.5 4.5L2.5 12.5L9 14L12.5 21L21.5 4.5Z" />
@@ -457,45 +440,29 @@
       }
     }
 
-    // ──────────────────────────────────────────────────────────────
     // HELPER: Format amount with commas and 2 decimal places
-    // Maximum: 100,000.00
     function formatAmountWithCommas(amountValue) {
-      // Remove any existing commas and non-numeric characters except decimal
       let cleanAmount = amountValue.toString().replace(/[^0-9.]/g, '');
-      
-      // Ensure only one decimal point
       const decimalParts = cleanAmount.split('.');
       if (decimalParts.length > 2) {
         cleanAmount = decimalParts[0] + '.' + decimalParts.slice(1).join('');
       }
-      
-      // Parse as float
       let numberValue = parseFloat(cleanAmount);
       if (isNaN(numberValue)) {
         return '0.00';
       }
-      
-      // Limit maximum to 100,000.00
       if (numberValue > 100000) {
         numberValue = 100000;
       }
-      
-      // Format with 2 decimal places
       const formattedNumber = numberValue.toFixed(2);
-      
-      // Split into integer and decimal parts
       const parts = formattedNumber.split('.');
       let integerPart = parts[0];
       const decimalPart = parts[1];
-      
-      // Add commas to integer part
       integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-      
       return `${integerPart}.${decimalPart}`;
     }
 
-    // HELPER: format date as "3 April 2026"
+    // HELPER: format date
     function formatDateLabel(dateStr) {
       if (!dateStr) return '';
       const d = new Date(dateStr + 'T12:00:00');
@@ -503,7 +470,7 @@
       return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
     }
 
-    // format time "3:17 pm"
+    // format time 
     function formatTime(timeStr) {
       if (!timeStr) return '';
       const [hourStr, minuteStr] = timeStr.split(':');
@@ -527,7 +494,7 @@
       document.getElementById('inputTime').value = `${hours}:${minutes}`;
     }
 
-    // Smart name split: break into two lines if name has more than 2 words
+    // Smart name split
     function formatRecipientName(nameRaw) {
       const trimmed = nameRaw.trim();
       if (trimmed === '') return 'Recipient';
@@ -541,9 +508,8 @@
       return `${firstLine}<br>${secondLine}`;
     }
 
-    // LIVE PREVIEW: sync all fields to the slip DOM
+    // LIVE PREVIEW
     function updatePreview() {
-      // Handle amount with commas and formatting
       const amountRaw = document.getElementById('inputAmount').value.trim();
       const formattedAmount = formatAmountWithCommas(amountRaw);
       document.getElementById('previewAmount').textContent = `₹${formattedAmount}`;
@@ -556,7 +522,9 @@
       const appRaw = document.getElementById('inputApp').value.trim();
       const upiDisplay = upiRaw === '' ? 'upi@example' : upiRaw;
       const appDisplay = appRaw === '' ? 'PaymentApp' : appRaw;
-      document.getElementById('previewUpi').textContent = `${appDisplay} · ${upiDisplay}`;
+      
+      // Update separator dot to match screenshot
+      document.getElementById('previewUpi').textContent = `${appDisplay} • ${upiDisplay}`;
 
       const dateVal = document.getElementById('inputDate').value;
       const timeVal = document.getElementById('inputTime').value;
@@ -572,24 +540,16 @@
       document.getElementById('previewDate').textContent = fullDateTime;
     }
 
-    // Format amount input as user types (add commas automatically)
+    // Format amount input
     function formatAmountInput() {
       const amountInput = document.getElementById('inputAmount');
       let rawValue = amountInput.value.trim();
-      
-      // Remove existing commas
       rawValue = rawValue.replace(/,/g, '');
-      
-      // Allow only numbers and decimal
       let numericValue = rawValue.replace(/[^0-9.]/g, '');
-      
-      // Ensure only one decimal
       const parts = numericValue.split('.');
       if (parts.length > 2) {
         numericValue = parts[0] + '.' + parts.slice(1).join('');
       }
-      
-      // Parse and limit to 100,000
       let numberValue = parseFloat(numericValue);
       if (!isNaN(numberValue)) {
         if (numberValue > 100000) {
@@ -597,23 +557,17 @@
           numericValue = numberValue.toString();
         }
       }
-      
-      // Format with commas for display in input field
       if (numericValue !== '') {
         const decimalParts = numericValue.split('.');
         let integerPart = decimalParts[0];
         const decimalPart = decimalParts[1] !== undefined ? '.' + decimalParts[1] : '';
-        
-        // Add commas to integer part
         integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        
         amountInput.value = integerPart + decimalPart;
       }
-      
       updatePreview();
     }
 
-    // Bind real-time updates for all editable inputs
+    // Bind real-time updates
     const inputIds = ['inputName', 'inputUpi', 'inputApp', 'inputDate', 'inputTime'];
     inputIds.forEach(id => {
       const element = document.getElementById(id);
@@ -623,37 +577,31 @@
       }
     });
     
-    // Special handler for amount input with comma formatting
     const amountElement = document.getElementById('inputAmount');
     if (amountElement) {
       amountElement.addEventListener('input', formatAmountInput);
       amountElement.addEventListener('change', formatAmountInput);
     }
 
-    // ──────────────────────────────────────────────────────────────
-    // DOWNLOAD high-res PNG (custom 713x1280 ultra-clear)
-    // ──────────────────────────────────────────────────────────────
+    // DOWNLOAD high-res PNG
     async function downloadHighResSlip() {
       const overlay = document.getElementById('loadingOverlay');
       overlay.classList.add('show');
 
       const slipElement = document.getElementById('slip');
-      const targetWidth = 713;   // high resolution for sharp prints
+      const targetWidth = 713;
       const targetHeight = 1280;
-      const originalWidth = slipElement.offsetWidth;   // 390px
-      const originalHeight = slipElement.offsetHeight; // 844px
+      const originalWidth = slipElement.offsetWidth;
+      const originalHeight = slipElement.offsetHeight;
 
-      // Detect active theme for background colour
       const isWhite = document.getElementById('inputTheme').value === 'white';
-      const bgColor = isWhite ? '#f3f6f4' : '#121212';
+      const bgColor = isWhite ? '#ffffff' : '#111111';
 
-      // Calculate scale to fill the target canvas without stretching weirdly
       const scaleX = targetWidth / originalWidth;
       const scaleY = targetHeight / originalHeight;
       const finalScale = Math.max(scaleX, scaleY);
 
       try {
-        // First capture the slip at high scale
         const canvasIntermediate = await html2canvas(slipElement, {
           scale: finalScale,
           backgroundColor: bgColor,
@@ -665,7 +613,6 @@
           windowHeight: originalHeight
         });
 
-        // Create final canvas with exact target dimensions
         const finalCanvas = document.createElement('canvas');
         finalCanvas.width = targetWidth;
         finalCanvas.height = targetHeight;
@@ -676,13 +623,11 @@
         const renderedWidth = canvasIntermediate.width;
         const renderedHeight = canvasIntermediate.height;
 
-        // center the rendered slip on black background
         const offsetX = (targetWidth - renderedWidth) / 2;
         const offsetY = (targetHeight - renderedHeight) / 2;
 
         ctx.drawImage(canvasIntermediate, offsetX, offsetY, renderedWidth, renderedHeight);
 
-        // create download link
         const downloadLink = document.createElement('a');
         downloadLink.download = 'payment_slip.png';
         downloadLink.href = finalCanvas.toDataURL('image/png');
@@ -721,7 +666,6 @@
       });
     }
 
-    // Attach download handler
     const downloadBtn = document.getElementById('btnDownload');
     if (downloadBtn) {
       downloadBtn.addEventListener('click', (e) => {
@@ -730,15 +674,15 @@
       });
     }
 
-    // Initialize fields: set current date+time, trigger preview.
+    // Initialize fields
     setCurrentDateTime();
     updatePreview();
     formatAmountInput();
 
-    // Extra: Make sure that the date/time inputs also update preview if changed via keyboard
     window.addEventListener('load', () => {
       updatePreview();
     });
   </script>
 </body>
 </html>
+```
